@@ -1,0 +1,26 @@
+name: CI - notice_crawler (Python)
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint-run:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: notice_crawler
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Syntax check
+        run: python -m compileall .

@@ -1,0 +1,55 @@
+name: Deploy notice-crawler
+
+on:
+  workflow_run:
+    workflows: ["Build & Push notice-crawler (GHCR)"]
+    types:
+      - completed
+  workflow_dispatch:
+    
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  ORG: ${{ github.repository_owner }}
+  IMAGE_NAME: notice-crawler
+  CONT_NAME: notice_crawler
+
+jobs:
+  run-docker-image:
+    runs-on: [ 'self-hosted', 'crawler' ]
+    env:
+      TZ: Asia/Seoul
+    steps:
+      - name: Set organization name to lowercase
+        run: |
+          echo "ORG_LC=${ORG,,}" >> $GITHUB_ENV
+
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login $REGISTRY -u ${{ github.actor }} --password-stdin
+          
+      - name: Getting current image name
+        id: current_img
+        run: |
+          CURRENT_IMG=$(docker inspect $CONT_NAME --format='{{.Config.Image}}' 2>/dev/null || echo "")
+          echo "image=$CURRENT_IMG" >> $GITHUB_OUTPUT
+
+      - name: Pulling latest image
+        run: docker pull $REGISTRY/$ORG_LC/$IMAGE_NAME:latest
+
+      - name: Executing container using Docker Compose
+        run: |
+          docker compose \
+          -f ${{ secrets.NOTICE_DOCKER_COMPOSE_FILE_PATH }} \
+          --env-file ${{ secrets.NOTICE_ENV_PATH }} \
+          up -d --no-build --pull never \
+          $CONT_NAME
+
+      - name: Removing old image
+        if: success() && steps.current_img.outputs.image != ''
+        run: docker image rm ${{ steps.current_img.outputs.image }} || true
+
+      - name: Flushing docker cache
+        run: docker buildx prune -f

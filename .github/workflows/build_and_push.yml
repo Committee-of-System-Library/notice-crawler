@@ -1,0 +1,54 @@
+name: Build & Push notice-crawler (GHCR)
+
+on:
+  workflow_run:
+    workflows: ["CI - notice_crawler (Python)"]
+    types:
+      - completed
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  ORG: ${{ github.repository_owner }}
+  IMAGE_NAME: notice-crawler
+
+jobs:
+  build-docker-image:
+    if: >
+      github.event.workflow_run.conclusion == 'success' && 
+      github.event.workflow_run.head_branch == 'main'
+      
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set organization name to lowercase
+        run: |
+          echo "ORG_LC=${ORG,,}" >> $GITHUB_ENV
+
+      - name: Set timestamp
+        id: ts
+        run: echo "TAG=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build
+        run: |
+          docker build \
+            -t $REGISTRY/$ORG_LC/$IMAGE_NAME:latest \
+            -t $REGISTRY/$ORG_LC/$IMAGE_NAME:${{ steps.ts.outputs.TAG }} \
+            ./notice_crawler
+
+      - name: Push
+        run: |
+          docker push $REGISTRY/$ORG_LC/$IMAGE_NAME:latest
+          docker push $REGISTRY/$ORG_LC/$IMAGE_NAME:${{ steps.ts.outputs.TAG }}
