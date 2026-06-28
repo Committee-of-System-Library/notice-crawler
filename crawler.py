@@ -165,9 +165,6 @@ class Crawler:
             title = noticeInfo.find('div', class_='bo_tit').get_text(strip=True) # 공지 제목 추출 및 양 끝 whiteSpace 제거
             href = noticeInfo.find('div', class_='bo_tit').find('a')['href']
 
-            print("TYPE =", type)
-            print("HREF =", href)
-
             match = re.search(r"wr_id=(\d+)", href)
             if not match:
                 continue
