@@ -14,8 +14,8 @@ permissions:
 env:
   REGISTRY: ghcr.io
   ORG: ${{ github.repository_owner }}
-  IMAGE_NAME: notice-crawler
-  CONT_NAME: notice_crawler
+  IMAGE_NAME: ${{ github.event.repository.name }}
+  CONT_NAME: ${{ github.event.repository.name }}
 
 jobs:
   run-docker-image:

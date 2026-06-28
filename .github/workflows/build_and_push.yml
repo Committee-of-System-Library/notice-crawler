@@ -10,7 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   ORG: ${{ github.repository_owner }}
-  IMAGE_NAME: notice-crawler
+  IMAGE_NAME: ${{ github.event.repository.name }}
 
 jobs:
   build-docker-image:
