@@ -46,7 +46,7 @@ jobs:
           docker build \
             -t $REGISTRY/$ORG_LC/$IMAGE_NAME:latest \
             -t $REGISTRY/$ORG_LC/$IMAGE_NAME:${{ steps.ts.outputs.TAG }} \
-            ./notice_crawler
+            .
 
       - name: Push
         run: |
