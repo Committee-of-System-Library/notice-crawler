@@ -148,17 +148,6 @@ class Crawler:
         noticeCnt = MAX_COUNT_OF_NOTICE_PER_PAGE if (MAX_COUNT_OF_NOTICE_PER_PAGE < noticeCnt) else noticeCnt # 가져와야 할 공지가 페이지당 최대 공지 수보다 큰 경우
         noticeCnt = len(rawData) if (len(rawData) < noticeCnt) else noticeCnt # 가져와야 할 공지 수 > 페이지에 기록된 공지 수 (페이지에 공지가 가져와야 할 개수보다 부족)
 
-        # 게시판별 고정 bo_table 매핑
-        # 일부 게시판에서 href에 잘못된 bo_table이 포함되는 경우가 있어
-        # 현재 크롤링 중인 게시판(type)을 기준으로 URL을 재생성한다.
-        bo_table_map = {
-                '공지사항': 'sub5_1',
-                '학부인재모집': 'sub5_3_a',
-                '취업정보': 'sub5_3_b',
-                '세미나/행사': 'sub5_4',
-                '학부소식': 'sub5_2_a',
-            }
-        
         for i in range(noticeCnt): # 공지사항 정보를 추출합니다.
             noticeInfo = rawData[i].find('td', class_='td_subject') 
             
@@ -169,10 +158,9 @@ class Crawler:
             if not match:
                 continue
 
-            # 게시판(type)에 맞는 bo_table로 URL 재생성
-            # 제목-URL mismatch 방지
-            num = match.group(1)
-            link = f"https://cse.knu.ac.kr/bbs/board.php?bo_table={bo_table_map[type]}&wr_id={num}"
+            title = noticeInfo.find('div', class_='bo_tit').get_text(strip=True) # 공지 제목 추출 및 양 끝 whiteSpace 제거
+            link = re.sub("&page=[0-9]*", "", noticeInfo.find('div', class_='bo_tit').find('a')['href']) # 공지 링크 추출; 뒷부분 (&page={pageNum}) 삭제
+            num = re.split("&wr_id=", link)[1] # 공지 URL에서 공지글 Number 추출
             if (type == '공지사항'):
                 cate_text = noticeInfo.find('a', class_='bo_cate_link').get_text(strip=True)
 
