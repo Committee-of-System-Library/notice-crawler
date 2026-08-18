@@ -92,6 +92,7 @@ def run_all():
     run("-Employment")
     run("-SeminarEvent")
     run("-SchoolNews")
+    run("-SchoolPerformance")
 
     general_logger.info("Finish crawling cycle")
 
