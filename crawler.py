@@ -152,8 +152,12 @@ class Crawler:
 
         for i in range(noticeCnt): # 공지사항 정보를 추출합니다.
             noticeInfo = rawData[i].find('td', class_='td_subject') 
+            title = noticeInfo.find('div', class_='bo_tit') # 공지 제목 추출
             
-            title = noticeInfo.find('div', class_='bo_tit').get_text(strip=True) # 공지 제목 추출 및 양 끝 whiteSpace 제거
+            for icon in title.find_all(class_="new_icon"):
+                icon.decompose()
+            
+            title = title.get_text(strip=True) # 양 끝 whiteSpace 제거
             href = noticeInfo.find('div', class_='bo_tit').find('a')['href']
 
             match = re.search(r"wr_id=(\d+)", href)
