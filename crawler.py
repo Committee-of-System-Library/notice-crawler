@@ -9,6 +9,7 @@ logger = logging.getLogger("crawler")
 
 URLs = {
         '공지사항': 'https://cse.knu.ac.kr/bbs/board.php?bo_table=sub6_1_a&page=',
+        '공지사항_대학원': 'https://cse.knu.ac.kr/bbs/board.php?bo_table=sub6_1_b&page=',
         '학부인재모집': 'https://cse.knu.ac.kr/bbs/board.php?bo_table=sub6_3_a&page=',
         '취업정보': 'https://cse.knu.ac.kr/bbs/board.php?bo_table=sub6_3_b&page=',
         '세미나/행사':'https://cse.knu.ac.kr/bbs/board.php?bo_table=sub6_4&page=', # 추가
@@ -162,7 +163,7 @@ class Crawler:
             title = noticeInfo.find('div', class_='bo_tit').get_text(strip=True) # 공지 제목 추출 및 양 끝 whiteSpace 제거
             link = re.sub("&page=[0-9]*", "", noticeInfo.find('div', class_='bo_tit').find('a')['href']) # 공지 링크 추출; 뒷부분 (&page={pageNum}) 삭제
             num = re.split("&wr_id=", link)[1] # 공지 URL에서 공지글 Number 추출
-            if (type == '공지사항'):
+            if (type in [ '공지사항', '공지사항_대학원' ]):
                 cate_text = noticeInfo.find('a', class_='bo_cate_link').get_text(strip=True)
 
                 category = CATEGORY_ALIAS.get(cate_text)# 각 공지에 지정되어 있는 카테고리 추출
