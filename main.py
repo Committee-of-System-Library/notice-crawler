@@ -1,7 +1,6 @@
 import logging
 import sys
 import os
-from datetime import datetime
 from crawler import Crawler
 from notice import *
 
@@ -70,12 +69,14 @@ def run(typeSelect: str):
         case '-SchoolNews': 
             logger.info(f"Start crawling ({typeSelect[1:]})")
             noticeList = crawler.get_all_notice(type='학부소식', noticeCnt=int(schoolNewsCnt))
+        case '-SchoolPerformance': 
+            logger.info(f"Start crawling ({typeSelect[1:]})")
+            noticeList = crawler.get_all_notice(type='학부성과', noticeCnt=int(schoolNewsCnt))
         case _:
-            logger.warning("Usage: python main.py -[ Notice | Recruiting | Employment | SeminarEvent | SchoolNews ]")
+            logger.warning("Usage: python main.py -[ Notice | Recruiting | Employment | SeminarEvent | SchoolNews | SchoolPerformance ]")
             return
     logger.info(f"Finish crawling ({typeSelect[1:]})")
     
-
     response = crawler.send_notice_to_api(url, noticeList)
     if response.status_code == 200:
         logger.info(f"Finish sending ({typeSelect[1:]}) - status={response.status_code}")
@@ -85,7 +86,7 @@ def run(typeSelect: str):
 
 if __name__ == '__main__':
     if (len(sys.argv) != 2):
-        logger.warning("Usage:", sys.argv[0], "-[ Notice | Recruiting | Employment  | SeminarEvent | SchoolNews ]\n")
+        logger.warning("Usage:", sys.argv[0], "-[ Notice | Recruiting | Employment | SeminarEvent | SchoolNews | SchoolPerformance ]")
 
     else:
         run(sys.argv[1])

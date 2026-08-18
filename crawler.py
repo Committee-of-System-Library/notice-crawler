@@ -2,18 +2,18 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 import re
-import unicodedata
 
 from notice import *
 
 logger = logging.getLogger("crawler")
 
 URLs = {
-        '공지사항': 'https://cse.knu.ac.kr/bbs/board.php?bo_table=sub5_1&page=',
-        '학부인재모집': 'https://cse.knu.ac.kr/bbs/board.php?bo_table=sub5_3_a&page=',
-        '취업정보': 'https://cse.knu.ac.kr/bbs/board.php?bo_table=sub5_3_b&page=',
-        '세미나/행사':'https://cse.knu.ac.kr/bbs/board.php?bo_table=sub5_4&page=', # 추가
-        '학부소식' : 'https://cse.knu.ac.kr/bbs/board.php?bo_table=sub5_2_a&page=',
+        '공지사항': 'https://cse.knu.ac.kr/bbs/board.php?bo_table=sub6_1_a&page=',
+        '학부인재모집': 'https://cse.knu.ac.kr/bbs/board.php?bo_table=sub6_3_a&page=',
+        '취업정보': 'https://cse.knu.ac.kr/bbs/board.php?bo_table=sub6_3_b&page=',
+        '세미나/행사':'https://cse.knu.ac.kr/bbs/board.php?bo_table=sub6_4&page=', # 추가
+        '학부소식' : 'https://cse.knu.ac.kr/bbs/board.php?bo_table=sub6_2_b&page=',
+        '학부성과' : 'https://cse.knu.ac.kr/bbs/board.php?bo_table=sub6_2_a&page=',
     }
 
 CATEGORY_ALIAS = {
@@ -37,6 +37,7 @@ CATEGORY_ALIAS = {
 
     # 학부소식
     '학부소식': 'SCHOOL_NEWS',
+    '학부성과': 'SCHOOL_NEWS' # Category 별도로 분리하지 않음. (동일 Category에 소식과 성과를 출력하도록 함.)
 }
 
 MAX_COUNT_OF_NOTICE_PER_PAGE = 0
@@ -198,8 +199,8 @@ class Crawler:
 
         logger.info(f"Start crawling {type}")
 
-        if type == "학부소식":
-            noticeList = self.__parse_school_news(noticeCnt)
+        if type in [ "학부소식", "학부성과" ]:
+            noticeList = self.__parse_school_news(noticeCnt=noticeCnt, type=type)
             logger.info(f"Finish crawling {type} - collected {len(noticeList)} notices")
             return noticeList
 
@@ -248,7 +249,7 @@ class Crawler:
             raise
 
 
-    def __parse_school_news(self, noticeCnt: int) -> list[Notice]:
+    def __parse_school_news(self, noticeCnt: int, type: str) -> list[Notice]:
         """
         학부소식 게시판 전용 파싱 함수
         카드형 레이아웃(div#prs > ul > li) 게시글 목록을 수집
@@ -257,10 +258,10 @@ class Crawler:
         pageNum = 1
 
         while len(noticeList) < noticeCnt:
-            response = requests.get(URLs["학부소식"] + str(pageNum))
+            response = requests.get(URLs[type] + str(pageNum))
             soup = BeautifulSoup(response.text, "html.parser")
 
-            items = soup.select("div#prs > ul > li")
+            items = soup.select("#gall_ul > li")
             if not items:
                 logger.warning(f"No school news items found on page {pageNum}")
                 break
@@ -269,14 +270,13 @@ class Crawler:
 
             for item in items:
                 a_tag = item.select_one("a[href*='wr_id=']")
-                title_tag = item.select_one("h4")
-
+                title_tag = item.select_one("div.gall_text_href > a")
+                
                 if not a_tag or not title_tag:
                     continue
 
                 href = a_tag.get("href")
                 title = title_tag.get_text(" ", strip=True)
-
                 if not href or not title:
                     continue
 
