@@ -57,7 +57,7 @@ def run(typeSelect: str):
         case '-Notice':
             logger.info(f"Start crawling ({typeSelect[1:]})")
             noticeList = crawler.get_all_notice(type='공지사항', noticeCnt=int(noticeCnt))
-            noticeList = crawler.get_all_notice(type='공지사항_대학원', noticeCnt=int(noticeCnt))
+            noticeList.extend(crawler.get_all_notice(type='공지사항_대학원', noticeCnt=int(noticeCnt)))
         case '-Recruiting':
             logger.info(f"Start crawling ({typeSelect[1:]})")
             noticeList = crawler.get_all_notice(type='학부인재모집', noticeCnt=int(recruitingCnt))
