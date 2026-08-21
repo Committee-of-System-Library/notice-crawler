@@ -279,6 +279,9 @@ class Crawler:
                 
                 if not a_tag or not title_tag:
                     continue
+                
+                for icon in title_tag.find_all(class_="new_icon"):
+                    icon.decompose()
 
                 href = a_tag.get("href")
                 title = title_tag.get_text(" ", strip=True)
